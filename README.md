@@ -28,6 +28,8 @@ int main(int argc, char* argv[])
 }
 ```
 
+Make sure main takes the `argv` parameter as it is used in the `BEGIN_EXCEPTIONS` macro.
+
 Anywhere within this block, you can use the macro `CRITICAL` to generate a critical issue that will terminate the program and print your message along with the stacktrace and the exact location within a source file where the macro was called.
 Ex:
 ```c++
