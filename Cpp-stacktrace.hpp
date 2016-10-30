@@ -20,6 +20,7 @@
 #define EXCEPTIONS
 
 #include <cstdio>
+#include <cstdlib>
 #include <execinfo.h>
 #include <csignal>
 #include <stdint.h>
