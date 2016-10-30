@@ -16,7 +16,7 @@ Make sure addr2line (atos for Mac OS) is installed on the target system (the sys
 Put the macros `BEGIN_EXCEPTIONS` and `END_EXCEPTIONS` around the code you wish to generate dynamic stacktraces for as so :
 
 ```c++
-#include <Cpp-stacktrace.hpp>
+#include "Cpp-stacktrace.hpp"
 
 int main(int argc, char* argv[])
 {
@@ -32,8 +32,9 @@ Make sure main takes the `argv` parameter as it is used in the `BEGIN_EXCEPTIONS
 
 Anywhere within this block, you can use the macro `CRITICAL` to generate a critical issue that will terminate the program and print your message along with the stacktrace and the exact location within a source file where the macro was called.
 Ex:
+
 ```c++
-#include <Cpp-stacktrace.hpp>
+#include "Cpp-stacktrace.hpp"
 
 int main(int argc, char* argv[])
 {
