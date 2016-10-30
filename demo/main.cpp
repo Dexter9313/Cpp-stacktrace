@@ -47,7 +47,7 @@ class A
 		}
 };
 
-int main(int argc, char* argv[0])
+int main(int argc, char* argv[])
 {
 	BEGIN_EXCEPTIONS
 	A a;
