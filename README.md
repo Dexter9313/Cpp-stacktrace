@@ -52,3 +52,7 @@ There has been a critical error ! (in main at main.cpp:6)
 ```
 
 You can read the small demo to have a better understanding on how to use this library. As stated in the disclaimer, a better documentation will come.
+
+# Compiling
+
+Use your compiler with the *-rdynamic* parameter to compile your project. If you want functions names in the stacktrace, you also obviously need to compile in debug mode.
