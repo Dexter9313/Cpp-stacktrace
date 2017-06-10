@@ -1,7 +1,4 @@
 language: cpp
-compiler:
-    - clang
-    - gcc
 script:
     - cd demo/
     - make
