@@ -1,42 +1,51 @@
 /*
-	Copyright (C) 2016 Florian Cabot
+        Copyright (C) 2016 Florian Cabot
 
-	This program is free software; you can redistribute it and/or modify
-	it under the terms of the GNU General Public License as published by
-	the Free Software Foundation; either version 3 of the License, or
-	(at your option) any later version.
+        This program is free software; you can redistribute it and/or modify
+        it under the terms of the GNU General Public License as published by
+        the Free Software Foundation; either version 3 of the License, or
+        (at your option) any later version.
 
-	This program is distributed in the hope that it will be useful,
-	but WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-	GNU General Public License for more details.
+        This program is distributed in the hope that it will be useful,
+        but WITHOUT ANY WARRANTY; without even the implied warranty of
+        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+        GNU General Public License for more details.
 
-	You should have received a copy of the GNU General Public License along
-	with this program; if not, write to the Free Software Foundation, Inc.,
-	51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+        You should have received a copy of the GNU General Public License along
+        with this program; if not, write to the Free Software Foundation, Inc.,
+        51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
 #ifndef EXCEPTIONS
 #define EXCEPTIONS
 
+#include <csignal>
 #include <cstdio>
 #include <cstdlib>
 #include <execinfo.h>
-#include <csignal>
-#include <stdint.h>
 #include <iostream>
 #include <sstream>
+#include <stdint.h>
 
-#define CRITICAL(str) \
-	{print_stacktrace(0); \
-	throw(CriticalException(str, __func__, __FILE__, __LINE__));\
+#define CRITICAL(str)                                                \
+	{                                                                \
+		print_stacktrace(0);                                         \
+		throw(CriticalException(str, __func__, __FILE__, __LINE__)); \
 	}
 
 #define MAX_BACKTRACE_LINES 64
 
-#define BEGIN_EXCEPTIONS init_exceptions(argv[0]); try {
-
-#define END_EXCEPTIONS } catch(CriticalException exception) { std::cerr << exception << std::endl; exit(EXIT_FAILURE);}
+#define BEGIN_EXCEPTIONS      \
+	init_exceptions(argv[0]); \
+	try                       \
+	{
+#define END_EXCEPTIONS                       \
+	}                                        \
+	catch(CriticalException exception)       \
+	{                                        \
+		std::cerr << exception << std::endl; \
+		exit(EXIT_FAILURE);                  \
+	}
 
 char* _programName;
 
@@ -44,11 +53,11 @@ void print_stacktrace(int calledFromSigInt);
 void posix_signal_handler(int sig);
 void set_signal_handler(sig_t handler);
 void init_exceptions(char* programName);
-int addr2line(char const * const program_name, void const * const addr, int lineNb);
-
+int addr2line(char const* const program_name, void const* const addr,
+              int lineNb);
 
 /* prints formated stack trace with most information as possible
-   parameter indicates if the function is called by the signal handler or not 
+   parameter indicates if the function is called by the signal handler or not
    (to hide the call to the signal handler) */
 void print_stacktrace(int calledFromSigInt)
 {
@@ -56,7 +65,7 @@ void print_stacktrace(int calledFromSigInt)
 	char** strings;
 
 	int nptrs = backtrace(buffer, MAX_BACKTRACE_LINES);
-	strings = backtrace_symbols(buffer, nptrs);
+	strings   = backtrace_symbols(buffer, nptrs);
 	if(strings == NULL)
 	{
 		perror("backtrace_symbols");
@@ -66,11 +75,12 @@ void print_stacktrace(int calledFromSigInt)
 	unsigned int i = 1;
 	if(calledFromSigInt != 0)
 		++i;
-	for(; i < nptrs-2; ++i)
+	for(; i < nptrs - 2; ++i)
 	{
-		//if addr2line failed, print what we can
-		if(addr2line(_programName, buffer[i], nptrs-2-i-1) != 0)
-			std::cerr << "[" << nptrs-2-i-1 << "] "<< strings[i] << std::endl;
+		// if addr2line failed, print what we can
+		if(addr2line(_programName, buffer[i], nptrs - 2 - i - 1) != 0)
+			std::cerr << "[" << nptrs - 2 - i - 1 << "] " << strings[i]
+			          << std::endl;
 	}
 
 	free(strings);
@@ -82,23 +92,36 @@ void posix_signal_handler(int sig)
 	switch(sig)
 	{
 		case SIGABRT:
-			std::cerr << "Caught SIGABRT: usually caused by an abort() or assert()" << std::endl;
+			std::cerr
+			    << "Caught SIGABRT: usually caused by an abort() or assert()"
+			    << std::endl;
 			break;
 		case SIGFPE:
-			std::cerr << "Caught SIGFPE: arithmetic exception, such as divide by zero" << std::endl;;
+			std::cerr
+			    << "Caught SIGFPE: arithmetic exception, such as divide by zero"
+			    << std::endl;
+			;
 			break;
 		case SIGILL:
-			std::cerr << "Caught SIGILL: illegal instruction" << std::endl;;
+			std::cerr << "Caught SIGILL: illegal instruction" << std::endl;
+			;
 			break;
 		case SIGINT:
-			std::cerr << "Caught SIGINT: interactive attention signal, probably a ctrl+c" << std::endl;;
+			std::cerr << "Caught SIGINT: interactive attention signal, "
+			             "probably a ctrl+c"
+			          << std::endl;
+			;
 			break;
 		case SIGSEGV:
-			std::cerr << "Caught SIGSEGV: segfault" << std::endl;;
+			std::cerr << "Caught SIGSEGV: segfault" << std::endl;
+			;
 			break;
 		case SIGTERM:
 		default:
-			std::cerr << "Caught SIGTERM: a termination request was sent to the program" << std::endl;;
+			std::cerr << "Caught SIGTERM: a termination request was sent to "
+			             "the program"
+			          << std::endl;
+			;
 			break;
 	}
 	_Exit(EXIT_FAILURE);
@@ -107,9 +130,9 @@ void posix_signal_handler(int sig)
 void set_signal_handler(sig_t handler)
 {
 	signal(SIGABRT, handler);
-	signal(SIGFPE,  handler);
-	signal(SIGILL,  handler);
-	signal(SIGINT,  handler);
+	signal(SIGFPE, handler);
+	signal(SIGILL, handler);
+	signal(SIGINT, handler);
 	signal(SIGSEGV, handler);
 	signal(SIGTERM, handler);
 }
@@ -122,37 +145,39 @@ void init_exceptions(char* programName)
 	_programName = programName;
 }
 
-/* Resolve symbol name and source location given the path to the executable 
+/* Resolve symbol name and source location given the path to the executable
    and an address
-   returns 0 if address has been resolved and a message has been printed; else returns 1 */
-int addr2line(char const * const program_name, void const * const addr, int lineNb)
+   returns 0 if address has been resolved and a message has been printed; else
+   returns 1 */
+int addr2line(char const* const program_name, void const* const addr,
+              int lineNb)
 {
 	char addr2line_cmd[512] = {0};
 
-	/* have addr2line map the address to the relent line in the code */
-	#ifdef __APPLE__
-		/* apple does things differently... */
-		sprintf(addr2line_cmd,"atos -o %.256s %p", program_name, addr); 
-	#else
-		sprintf(addr2line_cmd,"addr2line -C -f -e %.256s %p", program_name, addr); 
-	#endif
+/* have addr2line map the address to the relent line in the code */
+#ifdef __APPLE__
+	/* apple does things differently... */
+	sprintf(addr2line_cmd, "atos -o %.256s %p", program_name, addr);
+#else
+	sprintf(addr2line_cmd, "addr2line -C -f -e %.256s %p", program_name, addr);
+#endif
 
 	/* This will print a nicely formatted string specifying the
 	   function and source line of the address */
-	
-	FILE *fp;
+
+	FILE* fp;
 	char outLine1[1035];
 	char outLine2[1035];
 
 	/* Open the command for reading. */
 	fp = popen(addr2line_cmd, "r");
-	if (fp == NULL)
+	if(fp == NULL)
 		return 1;
 
-	while (fgets(outLine1, sizeof(outLine1)-1, fp) != NULL)
+	while(fgets(outLine1, sizeof(outLine1) - 1, fp) != NULL)
 	{
 		/* if we have a pair of lines */
-		if(fgets(outLine2, sizeof(outLine2)-1, fp) != NULL)
+		if(fgets(outLine2, sizeof(outLine2) - 1, fp) != NULL)
 		{
 			/* if symbols are readable */
 			if(outLine2[0] != '?')
@@ -169,16 +194,17 @@ int addr2line(char const * const program_name, void const * const addr, int line
 				}
 
 				/* don't display the whole path */
-				int lastSlashPos=0;
-				
+				int lastSlashPos = 0;
+
 				for(i = 0; i < 1035 && outLine2[i] != '\0'; ++i)
 				{
 					if(outLine2[i] == '\0')
 						break;
 					if(outLine2[i] == '/')
-						lastSlashPos = i+1;
+						lastSlashPos = i + 1;
 				}
-				std::cerr << "[" << lineNb << "] " << addr << " in " << outLine1 << " at " << outLine2+lastSlashPos << std::flush;
+				std::cerr << "[" << lineNb << "] " << addr << " in " << outLine1
+				          << " at " << outLine2 + lastSlashPos << std::flush;
 			}
 			else
 			{
@@ -200,32 +226,39 @@ int addr2line(char const * const program_name, void const * const addr, int line
 
 class CriticalException
 {
-	private:
-		std::string message;
-		std::string funcName;
-		std::string file;
-		int line;
-		
-		static std::string itos(int i)
-		{
-			std::ostringstream oss;oss <<i;return oss.str();
-		}
+  private:
+	std::string message;
+	std::string funcName;
+	std::string file;
+	int line;
 
-	public:
-		CriticalException(std::string message, std::string funcName, std::string file, int line) : message(message), funcName(funcName), file(file), line(line)
-		{
-		
-		}
-		std::string toStr() const
-		{
-			return message + " (in " + funcName + " at " + file + ":" + itos(line) + ")";
-		}
+	static std::string itos(int i)
+	{
+		std::ostringstream oss;
+		oss << i;
+		return oss.str();
+	}
+
+  public:
+	CriticalException(std::string message, std::string funcName,
+	                  std::string file, int line)
+	    : message(message)
+	    , funcName(funcName)
+	    , file(file)
+	    , line(line)
+	{
+	}
+	std::string toStr() const
+	{
+		return message + " (in " + funcName + " at " + file + ":" + itos(line)
+		       + ")";
+	}
 };
 
-std::ostream &operator<<(std::ostream &stream, CriticalException const& exception)
+std::ostream& operator<<(std::ostream& stream,
+                         CriticalException const& exception)
 {
 	return stream << exception.toStr();
 }
 
 #endif
-
