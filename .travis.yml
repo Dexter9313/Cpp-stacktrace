@@ -1,4 +1,7 @@
 language: cpp
 script:
     - cd demo/
+    - mkdir build
+    - cd build/
+    - cmake ..
     - make
