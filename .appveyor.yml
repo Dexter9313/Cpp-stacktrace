@@ -1,0 +1,14 @@
+build:
+    verbosity: detailed
+install:
+    # CMake refuses to generate MinGW Makefiles if sh.exe is in the Path
+    - ps: Get-Command sh.exe -All | Remove-Item
+before_build:
+    - set MINGW_BIN_DIR=C:\mingw-w64\x86_64-6.3.0-posix-seh-rt_v5-rev1\mingw64\bin
+    - set Path=%MINGW_BIN_DIR%;%Path%
+    - cd C:\projects\cpp-stacktrace\demo
+build_script:
+    - mkdir build
+    - cd build
+    - cmake .. -G "MinGW Makefiles"
+    - cmake --build . --target demo
